@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimz Store App - Layanan Digital Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+        .dark body {
+            background-color: #0f172a;
+            color: #e5e7eb;
+        }
+        .emerald-gradient {
+            background: linear-gradient(90deg, #059669, #10b981);
+        }
+        .dark .dark-gradient {
+            background: linear-gradient(90deg, #047857, #059669);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .page-hidden { display: none; }
+        .auth-active { overflow: hidden; }
+
+        /* Preloader Styles */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f9fafb;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .dark #preloader { background-color: #0f172a; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #059669;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Checkout Modal Animation */
+        #checkout-animation-modal .spinner {
+             border-left-color: #ffffff;
+        }
+        #checkout-success-icon {
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+        #checkout-animation-modal.success #checkout-success-icon {
+            transform: scale(1);
+            opacity: 1;
+        }
+        #checkout-animation-modal.success .spinner {
+            display: none;
+        }
+
+        .chat-bubble-user { background-color: #059669; color: white; }
+        .chat-bubble-ai { background-color: #e5e7eb; color: #1f2937; }
+        .dark .chat-bubble-ai { background-color: #374151; color: #e5e7eb; }
+        
+        .auth-bg {
+            background-image: linear-gradient(45deg, #d1fae5, #a7f3d0);
+            transition: background-image 0.5s ease;
+        }
+        .dark .auth-bg {
+            background-image: linear-gradient(45deg, #064e3b, #0f172a);
+        }
+        .auth-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .dark .auth-card {
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .form-input {
+            background-color: rgba(249, 250, 251, 0.8);
+            transition: all 0.3s ease;
+        }
+        .dark .form-input {
+             background-color: rgba(51, 65, 85, 0.8);
+             border-color: #4b5563;
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 2px #10b981;
+            background-color: #fff;
+        }
+        .dark .form-input:focus {
+             background-color: #374151;
+        }
+        
+        /* Learn Coding & Practice Page Styles */
+        #interactive-stamp, #game-canvas-container {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .code-editor {
+            font-family: 'Courier New', Courier, monospace;
+            tab-size: 4;
+            background-color: #1e293b;
+            color: #e2e8f0;
+        }
+        #code-editor-output, #game-canvas {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .dark #code-editor-output, .dark #game-canvas {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        #game-canvas {
+            image-rendering: pixelated;
+        }
+        .prose pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="transition-colors duration-300">
+        <!-- Header -->
+        <header id="main-header" class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40 shadow-md">
+            <nav class="container mx-auto px-4 lg:px-8 flex justify-between items-center py-4">
+                <a href="#" class="font-bold text-2xl text-emerald-600" onclick="navigateTo('home')">Dimz Store</a>
+                <div class="hidden lg:flex items-center space-x-6">
+                    <a href="#" class="hover:text-emerald-600 transition-colors" onclick="navigateTo('home')">Home</a>
+                    <a href="#" class="hover:text-emerald-600 transition-colors" onclick="navigateTo('products')">Produk</a>
+                    <a href="#" class="hover:text-emerald-600 transition-colors" onclick="navigateTo('learn-coding')">Belajar Coding</a>
+                    <a href="#" class="hover:text-emerald-600 transition-colors" onclick="navigateTo('practice-coding')">Praktek Coding</a>
+                    <a href="#" class="hover:text-emerald-600 transition-colors" onclick="navigateTo('wishlist')">Wishlist</a>
+                    <a href="#" id="admin-dashboard-link" class="hidden hover:text-emerald-600 transition-colors" onclick="navigateTo('admin-dashboard')">Dashboard</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                     <a href="#" class="relative hover:text-emerald-600 transition-colors" onclick="navigateTo('cart')">
+                        <i data-lucide="shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </a>
+                    <div id="auth-section">
+                        <!-- Dynamically filled -->
+                    </div>
+                    <button id="dark-mode-toggle" class="hover:text-emerald-600 transition-colors">
+                        <i data-lucide="moon" class="block dark:hidden"></i>
+                        <i data-lucide="sun" class="hidden dark:block"></i>
+                    </button>
+                    <button class="lg:hidden" id="mobile-menu-button">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </nav>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden lg:hidden px-4 pb-4 space-y-2 bg-white/95 dark:bg-slate-900/95">
+                <a href="#" class="block hover:text-emerald-600 transition-colors" onclick="navigateTo('home')">Home</a>
+                <a href="#" class="block hover:text-emerald-600 transition-colors" onclick="navigateTo('products')">Produk</a>
+                <a href="#" class="block hover:text-emerald-600 transition-colors" onclick="navigateTo('learn-coding')">Belajar Coding</a>
+                <a href="#" class="block hover:text-emerald-600 transition-colors" onclick="navigateTo('practice-coding')">Praktek Coding</a>
+                <a href="#" class="block hover:text-emerald-600 transition-colors" onclick="navigateTo('wishlist')">Wishlist</a>
+                <a href="#" id="mobile-admin-dashboard-link" class="hidden hover:text-emerald-600 transition-colors" onclick="navigateTo('admin-dashboard')">Dashboard</a>
+                 <div id="mobile-auth-section" class="border-t border-gray-200 dark:border-slate-700 pt-4 mt-4">
+                    <!-- Mobile auth buttons -->
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <!-- Home Page -->
+            <div id="home-page" class="page-hidden">
+                <section class="container mx-auto px-4 lg:px-8 py-16 text-center">
+                    <h1 id="welcome-message" class="text-3xl font-semibold mb-2 hidden"></h1>
+                    <h2 class="text-4xl md:text-6xl font-bold mb-4">Solusi Digital Premium</h2>
+                    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">Dapatkan layanan website, coding, bot, dan kebutuhan digital lainnya dengan kualitas terbaik dan asisten AI.</p>
+                    <button onclick="navigateTo('products')" class="emerald-gradient text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transition-all transform hover:scale-105 shadow-lg hover:shadow-emerald-300/50">
+                        Belanja Sekarang
+                    </button>
+                </section>
+                <section class="bg-white dark:bg-slate-800 py-12">
+                    <div class="container mx-auto px-4 lg:px-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Kategori Produk</h2>
+                        <div id="categories-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></div>
+                    </div>
+                </section>
+                <section class="container mx-auto px-4 lg:px-8 py-16">
+                    <h2 class="text-3xl font-bold text-center mb-8">Produk Unggulan</h2>
+                    <div id="featured-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+                </section>
+                 <section class="bg-white dark:bg-slate-800 py-12">
+                    <div class="container mx-auto px-4 lg:px-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Apa Kata Mereka?</h2>
+                        <div id="testimonials-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Products Page -->
+            <div id="products-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <h1 class="text-4xl font-bold text-center mb-8">Semua Produk</h1>
+                <div class="flex flex-wrap gap-4 mb-8 items-center justify-center">
+                    <select id="category-filter" class="p-2 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600"><option value="all">Semua Kategori</option></select>
+                    <select id="sort-filter" class="p-2 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600"><option value="popular">Populer</option><option value="price-asc">Harga: Terendah</option><option value="price-desc">Harga: Tertinggi</option></select>
+                    <input type="text" id="search-bar" placeholder="Cari produk..." class="p-2 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600 flex-grow max-w-xs">
+                </div>
+                <div id="all-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+
+            <!-- Learn Coding Page -->
+            <div id="learn-coding-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <!-- Dashboard View -->
+                <div id="learn-coding-dashboard">
+                    <section class="text-center mb-12">
+                         <div id="interactive-stamp" class="w-24 h-24 mx-auto mb-4 text-emerald-500 cursor-pointer">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 8L3 12L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 8L21 12L17 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M14 4L10 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4">Mulai Perjalanan Coding Anda</h1>
+                        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Pilih bahasa pemrograman yang ingin Anda kuasai. Semua materi disajikan gratis, dari dasar hingga mahir.</p>
+                        <div class="mt-8 max-w-lg mx-auto">
+                            <input type="text" id="learn-search-bar" placeholder="Cari materi, contoh: 'Dasar Python'..." class="w-full p-3 border rounded-full bg-white dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </section>
+                    <section>
+                        <div id="language-selection-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                            <!-- Language cards will be injected here -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Topic View -->
+                <div id="learn-coding-topic-view" class="page-hidden">
+                    <div class="mb-6">
+                        <button onclick="showLearnCodingDashboard()" class="flex items-center text-emerald-600 hover:underline">
+                            <i data-lucide="arrow-left" class="mr-2 h-5 w-5"></i>
+                            Kembali ke Daftar Bahasa
+                        </button>
+                    </div>
+                    
+                    <div class="grid lg:grid-cols-3 gap-8">
+                        <!-- Left Panel: Course Content -->
+                        <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md self-start sticky top-24">
+                            <div id="topic-header" class="mb-4"></div>
+                            <div id="topic-progress-bar" class="mb-4"></div>
+                            <ul id="topic-list" class="space-y-2 max-h-[60vh] overflow-y-auto"></ul>
+                        </div>
+
+                        <!-- Right Panel: Live Editor & Explanation -->
+                        <div class="lg:col-span-2 space-y-8">
+                            <div id="topic-content-container" class="prose dark:prose-invert max-w-none bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md"></div>
+                             <div class="flex justify-between mt-8">
+                                <button id="prev-topic-btn" class="flex items-center bg-gray-200 dark:bg-slate-700 py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i data-lucide="arrow-left" class="mr-2 h-5 w-5"></i> Sebelumnya
+                                </button>
+                                <button id="next-topic-btn" class="flex items-center emerald-gradient text-white py-2 px-4 rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Selanjutnya <i data-lucide="arrow-right" class="ml-2 h-5 w-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Coding Page (Game) -->
+            <div id="practice-coding-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <section class="text-center mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Praktek Coding Interaktif</h1>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Belajar logika pemrograman dengan cara yang seru! Tulis kode untuk menggerakkan karakter dan selesaikan misi.</p>
+                </section>
+
+                <div class="grid lg:grid-cols-5 gap-8">
+                    <!-- Game Canvas -->
+                    <div id="game-canvas-container" class="lg:col-span-3 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
+                        <canvas id="game-canvas" class="w-full rounded-md aspect-video"></canvas>
+                    </div>
+
+                    <!-- Mission & Code Editor Panel -->
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md flex flex-col">
+                        <div id="mission-panel">
+                            <h3 class="text-2xl font-bold mb-2">Misi Saat Ini: <span id="mission-title"></span></h3>
+                            <p id="mission-description" class="text-gray-600 dark:text-gray-400 mb-4"></p>
+                            <div class="flex items-center text-sm mb-4">
+                                <span class="font-semibold mr-2">Level:</span>
+                                <div id="level-selector" class="flex space-x-2"></div>
+                            </div>
+                        </div>
+                        <div class="flex-grow flex flex-col">
+                           <h4 class="font-semibold mb-2">Tulis Kode Anda di Sini:</h4>
+                           <textarea id="practice-code-input" class="w-full flex-grow p-4 border-0 outline-none resize-none code-editor rounded-md" spellcheck="false"></textarea>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                           <button id="run-practice-code-btn" class="flex-1 emerald-gradient text-white font-bold py-3 px-4 rounded-full hover:opacity-90 flex items-center justify-center">
+                               <i data-lucide="play" class="mr-2 h-5 w-5"></i> Jalankan Kode
+                           </button>
+                           <button id="reset-level-btn" class="bg-gray-200 dark:bg-slate-700 p-3 rounded-full hover:bg-gray-300 dark:hover:bg-slate-600" title="Reset Level">
+                               <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+                           </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Page -->
+            <div id="cart-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <h1 class="text-4xl font-bold text-center mb-8">Keranjang Belanja</h1>
+                <div id="cart-items-container" class="space-y-4"></div>
+                <div id="cart-summary" class="mt-8 pt-4 border-t dark:border-slate-700 text-right"></div>
+                <div id="empty-cart-message" class="text-center py-16 text-gray-500 page-hidden">
+                    <i data-lucide="shopping-cart" class="mx-auto h-16 w-16 mb-4"></i>
+                    <p>Keranjang Anda masih kosong.</p>
+                </div>
+            </div>
+
+            <!-- Checkout Page -->
+            <div id="checkout-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <h1 class="text-4xl font-bold text-center mb-8">Checkout</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">Data Pembeli</h2>
+                        <form id="checkout-form" class="space-y-4">
+                            <input type="text" id="checkout-name" placeholder="Nama Lengkap" class="w-full p-3 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600" required>
+                            <input type="text" placeholder="Alamat Pengiriman (jika perlu)" class="w-full p-3 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600">
+                            <input type="tel" id="checkout-phone" placeholder="Nomor HP Aktif" class="w-full p-3 border rounded-md bg-white dark:bg-slate-700 dark:border-slate-600" required>
+                            <button type="submit" class="emerald-gradient text-white font-bold py-3 px-8 rounded-full w-full hover:opacity-90">Selesaikan Pesanan</button>
+                        </form>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">Ringkasan Pesanan</h2>
+                        <div id="checkout-summary" class="p-4 border rounded-md bg-gray-50 dark:bg-slate-800 dark:border-slate-700"></div>
+                        <div class="mt-6 p-4 border rounded-md bg-blue-50 dark:bg-slate-800 dark:border-blue-800">
+                           <h3 class="text-xl font-semibold mb-2">Metode Pembayaran</h3>
+                           <p>Silakan lakukan pembayaran ke:</p>
+                           <p class="font-bold text-lg mt-1">DANA: 085187920550</p>
+                           <p class="mt-2 text-sm">Setelah pembayaran, mohon konfirmasi melalui WhatsApp agar pesanan Anda segera diproses.</p>
+                           <a href="https://wa.me/6285187920550?text=Halo,%20saya%20sudah%20melakukan%20pembayaran%20untuk%20pesanan%20saya." target="_blank" class="mt-4 inline-block bg-green-500 text-white font-bold py-2 px-4 rounded-full hover:bg-green-600">Konfirmasi via WhatsApp</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wishlist Page -->
+            <div id="wishlist-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12"></div>
+            
+            <!-- Profile Page -->
+            <div id="profile-page" class="page-hidden container mx-auto px-4 lg:px-8 py-16"></div>
+            
+            <!-- Admin Dashboard Page -->
+            <div id="admin-dashboard-page" class="page-hidden container mx-auto px-4 lg:px-8 py-12">
+                <h1 class="text-4xl font-bold mb-8">Dashboard Admin</h1>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4">Kelola Produk</h2>
+                    <div id="admin-product-form-container"></div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4">Daftar Produk</h3>
+                        <div id="admin-products-list" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Auth Pages Container (Acts as a fullscreen modal) -->
+        <div id="auth-container" class="page-hidden fixed inset-0 z-50">
+            <div class="min-h-screen w-full flex items-center justify-center auth-bg p-4">
+                <!-- Login Page -->
+                <div id="login-page-content" class="page-hidden w-full">
+                    <div class="max-w-md w-full mx-auto auth-card p-8 rounded-2xl shadow-2xl">
+                        <h2 class="text-3xl font-bold text-center mb-6">Selamat Datang</h2>
+                        <form id="login-form" class="space-y-4">
+                            <input type="text" id="login-username" placeholder="Username" class="w-full p-3 border rounded-md form-input" required>
+                            <input type="password" id="login-password" placeholder="Password" class="w-full p-3 border rounded-md form-input" required>
+                            <div class="flex items-center justify-between text-sm">
+                                <label class="flex items-center"><input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500"> Remember Me</label>
+                                <a href="#" onclick="showToast('Fitur ini akan segera hadir!')" class="font-semibold text-emerald-600 hover:underline">Lupa Password?</a>
+                            </div>
+                            <button type="submit" class="w-full emerald-gradient text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transform hover:scale-105 transition-all">Login</button>
+                        </form>
+                        <div class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+                            <p>Belum punya akun? <a href="#" class="font-semibold text-emerald-600 hover:underline" onclick="switchAuthPage('register')">Buat Akun</a></p>
+                            <p class="mt-6">atau <a href="#" class="font-bold text-emerald-700 hover:underline" onclick="switchAuthPage('admin-login')">Login sebagai Admin</a></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Register Page -->
+                <div id="register-page-content" class="page-hidden w-full">
+                    <div class="max-w-md w-full mx-auto auth-card p-8 rounded-2xl shadow-2xl">
+                        <h2 class="text-3xl font-bold text-center mb-6">Buat Akun Baru</h2>
+                        <form id="register-form" class="space-y-4">
+                            <input type="text" id="register-username" placeholder="Username" class="w-full p-3 border rounded-md form-input" required>
+                            <input type="password" id="register-password" placeholder="Password" class="w-full p-3 border rounded-md form-input" required>
+                            <button type="submit" class="w-full emerald-gradient text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transform hover:scale-105 transition-all">Daftar</button>
+                        </form>
+                        <p class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+                            Sudah punya akun? <a href="#" class="font-semibold text-emerald-600 hover:underline" onclick="switchAuthPage('login')">Login di sini</a>
+                        </p>
+                    </div>
+                </div>
+                <!-- Admin Login Page -->
+                <div id="admin-login-page-content" class="page-hidden w-full">
+                    <div class="max-w-md w-full mx-auto auth-card p-8 rounded-2xl shadow-2xl border-t-4 border-emerald-600">
+                        <h2 class="text-3xl font-bold text-center mb-2">Admin Panel</h2>
+                        <p class="text-center text-gray-500 mb-6">Login khusus untuk Dimas Dev</p>
+                        <form id="admin-login-form" class="space-y-4">
+                            <input type="text" id="admin-username" placeholder="Username" class="w-full p-3 border rounded-md form-input" required>
+                            <input type="password" id="admin-password" placeholder="Password" class="w-full p-3 border rounded-md form-input" required>
+                            <button type="submit" class="w-full emerald-gradient text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transform hover:scale-105 transition-all">Login Admin</button>
+                        </form>
+                        <p class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+                            <a href="#" class="hover:underline" onclick="switchAuthPage('login')">Kembali ke login pengguna</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="bg-slate-900 dark:bg-black text-white py-12">
+             <div class="container mx-auto px-4 lg:px-8 text-center">
+                <p>&copy; 2024 Dimz Store App. Dibuat dengan ❤️ oleh Dimas Ferdiansyah.</p>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <a href="https://wa.me/6285187920550" target="_blank" class="hover:text-emerald-400"><i data-lucide="phone"></i></a>
+                    <a href="#" class="hover:text-emerald-400"><i data-lucide="instagram"></i></a>
+                    <a href="#" class="hover:text-emerald-400"><i data-lucide="facebook"></i></a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- AI Chatbot -->
+        <div id="chatbot-container" class="fixed bottom-5 right-5 z-50">
+            <div id="chatbot-widget" class="hidden w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 flex flex-col h-[28rem]">
+                <div class="p-3 emerald-gradient text-white rounded-t-lg">
+                    <h3 class="font-bold">Asisten AI Dimz Store</h3>
+                    <p class="text-xs">Didukung oleh Gemini</p>
+                </div>
+                <div id="chat-window" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+                <div class="p-2 border-t dark:border-slate-700">
+                    <div class="flex">
+                        <input type="text" id="chat-input" placeholder="Ketik pertanyaan..." class="flex-1 p-2 border rounded-l-md bg-gray-100 dark:bg-slate-700 dark:border-slate-600 focus:outline-none">
+                        <button id="chat-send" class="bg-emerald-600 text-white px-4 rounded-r-md hover:bg-emerald-700"><i data-lucide="send" class="h-5 w-5"></i></button>
+                    </div>
+                </div>
+            </div>
+            <button id="chatbot-toggle" class="emerald-gradient rounded-full p-4 text-white shadow-lg transform hover:scale-110 transition-transform">
+                <i data-lucide="message-circle" id="chat-open-icon"></i>
+                <i data-lucide="x" id="chat-close-icon" class="hidden"></i>
+            </button>
+        </div>
+
+
+        <!-- Checkout Animation Modal -->
+        <div id="checkout-animation-modal" class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center">
+            <div class="bg-emerald-600 p-8 rounded-lg text-white text-center">
+                <div class="relative w-16 h-16 mx-auto">
+                    <div class="spinner"></div>
+                    <div id="checkout-success-icon" class="absolute inset-0 flex items-center justify-center">
+                        <i data-lucide="check" class="w-12 h-12"></i>
+                    </div>
+                </div>
+                <p id="checkout-status-text" class="mt-4 font-semibold text-lg">Memproses Pesanan...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- GEMINI API INTEGRATION ---
+        const callGeminiAPI = async (userQuery, systemPrompt) => {
+            const apiKey = ""; // Provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                addChatMessage("...", "ai-typing");
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                return text || "Maaf, terjadi sedikit gangguan pada AI. Coba lagi.";
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return "Maaf, asisten AI sedang tidak tersedia saat ini.";
+            } finally {
+                const typingBubble = document.querySelector('.chat-bubble-typing');
+                if (typingBubble) typingBubble.remove();
+            }
+        };
+
+        // --- DATABASE ---
+        let productsDB = [];
+        const defaultProducts = [
+            // Jasa Website
+            { id: 101, name: "Website Company Profile", category: "Jasa Website", price: 100000, description: "Tampilkan profil perusahaan Anda secara profesional untuk meningkatkan citra brand.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Company+Profile" },
+            { id: 102, name: "Website Toko Online", category: "Jasa Website", price: 200000, description: "Mulai bisnis online Anda dengan toko yang fungsional dan mudah dikelola.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Toko+Online", featured: true },
+            { id: 103, name: "Website Portofolio", category: "Jasa Website", price: 120000, description: "Pamerkan karya terbaik Anda dengan desain website portofolio yang elegan.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Portofolio" },
+            { id: 104, name: "Website Landing Page", category: "Jasa Website", price: 150000, description: "Tingkatkan konversi marketing Anda dengan landing page yang fokus dan menarik.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Landing+Page" },
+            { id: 105, name: "Website Berita/Blog", category: "Jasa Website", price: 180000, description: "Bagikan tulisan dan berita Anda dengan platform blog yang cepat dan SEO-friendly.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Blog" },
+            { id: 10, name: "Website Custom Request", category: "Jasa Website", price: 250000, description: "Wujudkan website impian Anda. Bebas request desain dan fitur sesuai kebutuhan.", image: "https://placehold.co/600x400/059669/FFFFFF?text=Web+Custom", featured: true },
+            // Jasa Pecahkan Error
+            { id: 201, name: "Fix Error HTML/CSS", category: "Jasa Coding", price: 20000, description: "Perbaiki masalah tampilan, layout, atau responsivitas pada website Anda.", image: "https://placehold.co/600x400/10b981/FFFFFF?text=Fix+HTML/CSS" },
+            { id: 202, name: "Fix Error JavaScript", category: "Jasa Coding", price: 30000, description: "Atasi bug, error konsol, atau fungsionalitas yang tidak berjalan pada JavaScript.", image: "https://placehold.co/600x400/10b981/FFFFFF?text=Fix+JS" },
+            { id: 203, name: "Fix Error Database", category: "Jasa Coding", price: 50000, description: "Solusi untuk masalah koneksi, query, atau performa database (MySQL/MongoDB).", image: "https://placehold.co/600x400/10b981/FFFFFF?text=Fix+DB" },
+            { id: 204, name: "Fix Error Hosting/Server", category: "Jasa Coding", price: 70000, description: "Bantuan untuk error 500, konfigurasi server, atau masalah hosting lainnya.", image: "https://placehold.co/600x400/10b981/FFFFFF?text=Fix+Server" },
+            { id: 205, name: "Fix Error Full Project", category: "Jasa Coding", price: 100000, description: "Analisis dan perbaikan error komprehensif untuk keseluruhan proyek Anda.", image: "https://placehold.co/600x400/10b981/FFFFFF?text=Fix+Project", featured: true },
+            // Jasa Bot WhatsApp
+            { id: 301, name: "Bot Auto Reply", category: "Bot WhatsApp", price: 30000, description: "Bot untuk membalas pesan secara otomatis berdasarkan kata kunci yang diatur.", image: "https://placehold.co/600x400/2dd4bf/FFFFFF?text=Bot+Auto+Reply" },
+            { id: 302, name: "Bot Order Toko Online", category: "Bot WhatsApp", price: 50000, description: "Otomatisasi proses pemesanan produk langsung dari chat WhatsApp.", image: "https://placehold.co/600x400/2dd4bf/FFFFFF?text=Bot+Toko" },
+            { id: 303, name: "Bot Group Management", category: "Bot WhatsApp", price: 60000, description: "Bot untuk mengelola grup, seperti kick/add member, atau anti-link.", image: "https://placehold.co/600x400/2dd4bf/FFFFFF?text=Bot+Grup" },
+            { id: 304, name: "Bot Custom Fitur", category: "Bot WhatsApp", price: 80000, description: "Request fitur bot spesifik sesuai dengan kebutuhan unik Anda.", image: "https://placehold.co/600x400/2dd4bf/FFFFFF?text=Bot+Custom" },
+            { id: 305, name: "Bot Full Package", category: "Bot WhatsApp", price: 120000, description: "Paket lengkap semua fitur bot untuk memaksimalkan bisnis Anda di WhatsApp.", image: "https://placehold.co/600x400/2dd4bf/FFFFFF?text=Bot+Full", featured: true },
+            // Jasa Editing
+            { id: 401, name: "Editing Foto Biasa", category: "Editing", price: 5000, description: "Koreksi warna dasar, crop, dan penyesuaian ringan untuk foto Anda.", image: "https://placehold.co/600x400/d946ef/FFFFFF?text=Edit+Foto" },
+            { id: 402, name: "Editing Foto Profesional", category: "Editing", price: 20000, description: "Retouching, manipulasi, dan editing detail untuk hasil foto yang sempurna.", image: "https://placehold.co/600x400/d946ef/FFFFFF?text=Edit+Pro" },
+            { id: 403, name: "Editing Video Short", category: "Editing", price: 25000, description: "Editing video pendek untuk TikTok/Reels, lengkap dengan transisi dan musik.", image: "https://placehold.co/600x400/d946ef/FFFFFF?text=Edit+Short" },
+            { id: 404, name: "Editing Video YouTube", category: "Editing", price: 50000, description: "Editing video panjang untuk YouTube, termasuk color grading dan audio mixing.", image: "https://placehold.co/600x400/d946ef/FFFFFF?text=Edit+YT" },
+            { id: 405, name: "Editing Cinematic", category: "Editing", price: 100000, description: "Ciptakan video dengan nuansa sinematik yang dramatis dan profesional.", image: "https://placehold.co/600x400/d946ef/FFFFFF?text=Cinematic", featured: true },
+            // Jasa Logo
+            { id: 501, name: "Logo Simple (Text Only)", category: "Jasa Logo", price: 5000, description: "Desain logo minimalis berbasis teks yang bersih dan elegan.", image: "https://placehold.co/600x400/f43f5e/FFFFFF?text=Logo+Simple" },
+            { id: 502, name: "Logo Modern Flat", category: "Jasa Logo", price: 10000, description: "Logo dengan gaya desain flat modern yang sedang tren saat ini.", image: "https://placehold.co/600x400/f43f5e/FFFFFF?text=Logo+Modern" },
+            { id: 503, name: "Logo Mascot/Vector", category: "Jasa Logo", price: 15000, description: "Desain logo berbasis karakter maskot atau ikon vektor yang unik.", image: "https://placehold.co/600x400/f43f5e/FFFFFF?text=Logo+Mascot" },
+            { id: 504, name: "Logo 3D", category: "Jasa Logo", price: 18000, description: "Berikan dimensi baru pada brand Anda dengan desain logo 3D yang menawan.", image: "https://placehold.co/600x400/f43f5e/FFFFFF?text=Logo+3D" },
+            { id: 505, name: "Logo Premium (Full Custom)", category: "Jasa Logo", price: 20000, description: "Paket lengkap pembuatan logo premium, dari konsep hingga finalisasi.", image: "https://placehold.co/600x400/f43f5e/FFFFFF?text=Logo+Premium", featured: true },
+            // Sosial Media (TikTok, IG, etc.)
+            { id: 14, name: "1000 Followers TikTok", category: "Sosial Media Boost", price: 68000, description: "Tambah 1000 followers untuk akun TikTok Anda.", image: "https://placehold.co/600x400/000000/FFFFFF?text=1K+TT+Foll", featured: true },
+            { id: 27, name: "1000 Followers Instagram", category: "Sosial Media Boost", price: 80000, description: "Tambah 1000 followers untuk akun Instagram Anda.", image: "https://placehold.co/600x400/E1306C/FFFFFF?text=1K+IG+Foll", featured: true },
+            { id: 40, name: "1000 Subscriber YouTube", category: "Sosial Media Boost", price: 120000, description: "Tambah 1000 subscriber untuk channel YouTube Anda.", image: "https://placehold.co/600x400/FF0000/FFFFFF?text=1K+YT+Subs", featured: true },
+        ];
+        const categoriesDB = [
+            { name: "Jasa Website", icon: "monitor-smartphone" }, 
+            { name: "Jasa Coding", icon: "code" }, 
+            { name: "Bot WhatsApp", icon: "bot" }, 
+            { name: "Jasa Logo", icon: "gem" },
+            { name: "Editing", icon: "video" }, 
+            { name: "Sosial Media Boost", icon: "thumbs-up" }, 
+        ];
+        const testimonialsDB = [
+            { name: "Andi", text: "Pelayanannya cepat banget, websitenya juga keren!", avatar: "https://placehold.co/100x100/eab308/FFFFFF?text=A" }, { name: "Budi", text: "Error codingan saya langsung beres, mantap Dimz Store!", avatar: "https://placehold.co/100x100/3b82f6/FFFFFF?text=B" }, { name: "Citra", text: "Followers TikTok naik drastis, aman dan terpercaya.", avatar: "https://placehold.co/100x100/ec4899/FFFFFF?text=C" },
+        ];
+
+        const learnCodingDB = {
+            html: {
+                title: 'HTML',
+                icon: 'code',
+                description: 'Dasar dari semua halaman web. Pelajari cara membangun struktur konten.',
+                topics: [
+                    { title: 'Pengenalan HTML', content: 'HTML (HyperText Markup Language) adalah bahasa markup standar untuk membuat halaman web. Ini mendeskripsikan struktur halaman web menggunakan elemen-elemen atau "tag". <br><br><b>Kegunaan:</b> Membangun kerangka atau struktur dasar dari sebuah website.', codeExample: `<!-- Ini adalah komentar di HTML -->\n\n<h1>Judul Utama Website</h1>\n\n<p>Ini adalah paragraf pertama Anda. Selamat datang di dunia web!</p>` },
+                    { title: 'Tag Dasar', content: 'Setiap bagian dari konten diapit oleh tag pembuka dan penutup. Contoh: `<p>Teks di sini</p>`. Beberapa tag tidak memiliki penutup, seperti `<img>` untuk gambar atau `<br>` untuk baris baru.<br><br><b>Langkah-langkah:</b><br>1. `<h1>` sampai `<h6>` untuk judul.<br>2. `<p>` untuk paragraf.<br>3. `<a>` untuk link/tautan.<br>4. `<img>` untuk menampilkan gambar.', codeExample: `<h2>Sub Judul</h2>\n\n<p>Anda bisa membuat link ke Google seperti ini: <a href="https://google.com">Klik di sini</a>.</p>\n\n<p>Dan ini cara menampilkan gambar:</p>\n<img src="https://placehold.co/100" alt="contoh gambar">` },
+                    { title: 'List', content: 'Ada dua jenis list utama: Unordered List (`<ul>`) untuk daftar tanpa urutan (pakai bullet), dan Ordered List (`<ol>`) untuk daftar berurutan (pakai angka). Setiap item di dalam list menggunakan tag `<li>`.', codeExample: `<h3>Daftar Belanjaan:</h3>\n<ul>\n  <li>Apel</li>\n  <li>Jeruk</li>\n  <li>Mangga</li>\n</ul>\n\n<h3>Langkah Memasak:</h3>\n<ol>\n  <li>Siapkan bahan</li>\n  <li>Mulai memasak</li>\n  <li>Sajikan</li>\n</ol>` },
+                ]
+            },
+            css: {
+                title: 'CSS',
+                icon: 'palette',
+                description: 'Berikan gaya dan tampilan visual pada website Anda dengan CSS.',
+                topics: [
+                    { title: 'Pengenalan CSS', content: 'CSS (Cascading Style Sheets) adalah bahasa untuk "menghias" elemen HTML. Tanpa CSS, web hanya akan berupa teks hitam-putih. <br><br><b>Kegunaan:</b> Mengatur warna, font, layout, spasi, dan semua aspek visual lainnya.', codeExample: `/* Ini adalah komentar di CSS */\n\nh1 {\n  color: blue;\n  font-size: 24px;\n}` },
+                    { title: 'Selector, Property, Value', content: 'Struktur dasar CSS terdiri dari: <br>1. <b>Selector:</b> Elemen HTML yang mau dihias (contoh: `p`, `.nama-class`, `#id-unik`).<br>2. <b>Property:</b> Jenis gaya yang mau diubah (contoh: `color`, `background-color`).<br>3. <b>Value:</b> Nilai dari gaya tersebut (contoh: `red`, `#FFFFFF`).', codeExample: `p {\n  color: green; /* Warna teks jadi hijau */\n  font-family: Arial; /* Jenis font */\n}\n\n.highlight {\n  background-color: yellow; /* Latar belakang jadi kuning */\n}` },
+                ]
+            },
+            javascript: {
+                title: 'JavaScript',
+                icon: 'zap',
+                description: 'Hidupkan website Anda dengan logika dan interaktivitas.',
+                topics: [
+                    { title: 'Pengenalan JavaScript', content: 'JavaScript (JS) adalah bahasa pemrograman yang membuat website menjadi interaktif. Jika HTML adalah kerangka dan CSS adalah kulit, maka JS adalah otaknya.<br><br><b>Kegunaan:</b> Membuat slider gambar, validasi form, game, animasi, dan mengambil data dari server.', codeExample: `// Menampilkan pesan popup\nalert('Halo, ini JavaScript!');` },
+                    { title: 'Variabel', content: 'Variabel adalah "wadah" untuk menyimpan nilai. Gunakan `let` untuk nilai yang bisa berubah, dan `const` untuk nilai yang tetap.<br><br><b>Langkah-langkah:</b><br>1. Deklarasikan variabel: `let nama;`<br>2. Beri nilai: `nama = "Dimas";`<br>3. Gunakan: `alert("Halo, " + nama);`', codeExample: `let umur = 20;\nconst nama = "Budi";\n\n// umur bisa diubah\numur = 21;\n\n// ini akan error karena const tidak bisa diubah\n// nama = "Andi"; \n\nalert(nama + " berumur " + umur + " tahun.");` },
+                ]
+            },
+            python: {
+                title: 'Python',
+                icon: 'rat',
+                description: 'Bahasa serbaguna untuk web, data science, dan AI.',
+                topics: [
+                    { title: 'Pengenalan Python', content: 'Python dikenal karena sintaksnya yang sederhana dan mudah dibaca. Sangat cocok untuk pemula.', codeExample: `print("Hello, Python!")` },
+                    { title: 'Kegunaan', content: 'Python digunakan untuk pengembangan web (backend), analisis data, kecerdasan buatan (AI), machine learning, dan otomasi skrip.'},
+                    { title: 'Sintaks Dasar', content: 'Tidak seperti bahasa lain, Python menggunakan indentasi (spasi di awal baris) untuk menandai blok kode.', codeExample: `nama = "Dunia"\nif nama == "Dunia":\n  print("Halo, " + nama)`},
+                ]
+            },
+        };
+
+        // --- STATE MANAGEMENT ---
+        let cart = [], users = [], currentUser = null, wishlist = [], learnCodingProgress = {};
+
+        // --- UTILS ---
+        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        const showToast = (message, isError = false) => {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-5 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white py-2 px-4 rounded-md shadow-lg transition-opacity duration-300 z-50`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+        const updateCartCount = () => {
+            const cartCount = document.getElementById('cart-count');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.classList.toggle('hidden', totalItems === 0);
+        };
+        const playSuccessSound = () => {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.error("Could not play sound:", e);
+            }
+        };
+
+        // --- LOCAL STORAGE ---
+        const saveData = () => {
+            localStorage.setItem('dimz_users', JSON.stringify(users));
+            if (currentUser) {
+                localStorage.setItem('dimz_currentUser', JSON.stringify(currentUser));
+            } else {
+                localStorage.removeItem('dimz_currentUser');
+            }
+            localStorage.setItem('dimz_products', JSON.stringify(productsDB));
+            localStorage.setItem('dimz_cart', JSON.stringify(cart));
+            localStorage.setItem('dimz_wishlist', JSON.stringify(wishlist));
+            localStorage.setItem('dimz_learnProgress', JSON.stringify(learnCodingProgress));
+        };
+        const loadData = () => {
+            users = JSON.parse(localStorage.getItem('dimz_users')) || [];
+            currentUser = JSON.parse(localStorage.getItem('dimz_currentUser')) || null;
+            const savedProducts = JSON.parse(localStorage.getItem('dimz_products'));
+            // If no saved products, use the extensive default list
+            productsDB = savedProducts && savedProducts.length > 9 ? savedProducts : defaultProducts;
+            cart = JSON.parse(localStorage.getItem('dimz_cart')) || [];
+            wishlist = JSON.parse(localStorage.getItem('dimz_wishlist')) || [];
+            learnCodingProgress = JSON.parse(localStorage.getItem('dimz_learnProgress')) || {};
+        };
+        
+        // --- AUTH & NAVIGATION ---
+        const mainPages = ['home', 'admin-dashboard', 'products', 'cart', 'checkout', 'profile', 'wishlist', 'learn-coding', 'practice-coding'];
+        const authPages = ['login', 'register', 'admin-login'];
+        
+        const navigateTo = (page) => {
+            const body = document.body;
+            const authContainer = document.getElementById('auth-container');
+            
+            if (authPages.includes(page)) {
+                mainPages.forEach(p => document.getElementById(`${p}-page`)?.classList.add('page-hidden'));
+                authContainer.classList.remove('page-hidden');
+                body.classList.add('auth-active');
+                switchAuthPage(page);
+            } else {
+                if (page === 'admin-dashboard' && (!currentUser || currentUser.role !== 'admin')) {
+                    navigateTo('admin-login');
+                    return;
+                }
+                authContainer.classList.add('page-hidden');
+                body.classList.remove('auth-active');
+                mainPages.forEach(p => document.getElementById(`${p}-page`)?.classList.add('page-hidden'));
+                document.getElementById(`${page}-page`)?.classList.remove('page-hidden');
+            }
+            window.scrollTo(0, 0);
+            document.getElementById('mobile-menu').classList.add('hidden');
+            
+            // Trigger specific render functions on navigation
+            if (page === 'admin-dashboard') renderAdminDashboard();
+            if (page === 'cart') renderCartPage();
+            if (page === 'wishlist') renderWishlistPage();
+            if (page === 'practice-coding') initGame();
+        };
+
+        const switchAuthPage = (page) => {
+            authPages.forEach(p => document.getElementById(`${p}-page-content`).classList.add('page-hidden'));
+            document.getElementById(`${page}-page-content`).classList.remove('page-hidden');
+        };
+
+        const handleRegister = (e) => {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            if (users.find(u => u.username === username)) {
+                showToast('Username sudah terdaftar!', true);
+                return;
+            }
+            const newUser = { username, password, role: 'customer' };
+            users.push(newUser);
+            currentUser = newUser;
+            saveData();
+            updateUIForAuthState();
+            navigateTo('home');
+            showToast(`Akun ${username} berhasil dibuat!`);
+        };
+        
+        const handleLogin = (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                saveData();
+                updateUIForAuthState();
+                navigateTo('home');
+            } else {
+                showToast('Username atau password salah.', true);
+            }
+        };
+
+        const handleAdminLogin = (e) => {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+            if (username === 'Dimas Dev' && password === '061526Tanggal') {
+                currentUser = { username: 'Dimas Dev', role: 'admin' };
+                saveData();
+                updateUIForAuthState();
+                navigateTo('admin-dashboard');
+            } else {
+                showToast('Username atau password admin salah.', true);
+            }
+        };
+
+        const logout = () => {
+            currentUser = null;
+            saveData();
+            updateUIForAuthState();
+            navigateTo('home');
+        };
+        
+        // --- UI & RENDER FUNCTIONS ---
+        const updateUIForAuthState = () => {
+            const authSection = document.getElementById("auth-section");
+            const mobileAuthSection = document.getElementById("mobile-auth-section");
+            const welcomeMsg = document.getElementById("welcome-message");
+            const adminLink = document.getElementById("admin-dashboard-link");
+            const mobileAdminLink = document.getElementById("mobile-admin-dashboard-link");
+            
+            authSection.innerHTML = "";
+            mobileAuthSection.innerHTML = "";
+
+            if (currentUser) {
+                welcomeMsg.textContent = `Selamat datang, ${currentUser.username}!`;
+                welcomeMsg.classList.remove("hidden");
+                const profileHTML = `<a href="#" class="hidden lg:flex items-center space-x-2 hover:text-emerald-600" onclick="navigateTo('profile')"><i data-lucide="user-circle"></i> <span>${currentUser.username}</span></a>`;
+                const logoutButtonHTML = `<button onclick="logout()" class="hover:text-red-500 transition-colors"><i data-lucide="log-out"></i></button>`;
+                authSection.innerHTML = `<div class="flex items-center space-x-4">${profileHTML}${logoutButtonHTML}</div>`;
+                const mobileProfileHTML = `<a href="#" class="block hover:text-emerald-600" onclick="navigateTo('profile')">Profil: ${currentUser.username}</a>`;
+                const mobileLogoutButtonHTML = `<button onclick="logout()" class="block w-full text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-2 rounded">Logout</button>`;
+                mobileAuthSection.innerHTML = mobileProfileHTML + mobileLogoutButtonHTML;
+                if (currentUser.role === "admin") {
+                    adminLink.classList.remove("hidden");
+                    mobileAdminLink.classList.remove("hidden")
+                } else {
+                    adminLink.classList.add("hidden");
+                    mobileAdminLink.classList.add("hidden")
+                }
+            } else {
+                welcomeMsg.classList.add("hidden");
+                const loginButtonHTML = `<a href="#" class="hidden lg:block bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700" onclick="navigateTo('login')">Login</a>`;
+                authSection.innerHTML = loginButtonHTML;
+                const mobileLoginButtonHTML = `<a href="#" class="block bg-emerald-600 text-white py-2 px-4 rounded-md text-center" onclick="navigateTo('login')">Login / Daftar</a>`;
+                mobileAuthSection.innerHTML = mobileLoginButtonHTML;
+                adminLink.classList.add("hidden");
+                mobileAdminLink.classList.add("hidden")
+            }
+            renderProfilePage();
+            lucide.createIcons();
+        };
+
+        const renderProfilePage = () => {
+            const container = document.getElementById("profile-page");
+            if (currentUser && currentUser.role === "admin") {
+                container.innerHTML = `
+                <div class="max-w-md mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+                    <div class="md:flex">
+                        <div class="md:shrink-0">
+                            <img id="profile-pic" class="h-48 w-full object-cover md:h-full md:w-48" src="https://placehold.co/384x384/059669/FFFFFF?text=DF" alt="Foto Profil Dimas Ferdiansyah">
+                        </div>
+                        <div class="p-8">
+                            <div class="uppercase tracking-wide text-sm text-emerald-500 font-semibold">Creator & Developer</div>
+                            <h1 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white">${currentUser.username}</h1>
+                            <p class="mt-2 text-slate-500 dark:text-slate-400">Panawangan, Kab. Ciamis, Jawa Barat</p>
+                            <div class="mt-4 text-slate-600 dark:text-slate-300 space-y-2">
+                                <p>“Saya sangat bangga karena anda telah menggunakan website saya. Semoga jika anda sedang belajar coding bisa cepat memahami, dan jika sedang mencari produk semoga segera menemukan yang sesuai. Karena saya tidak hanya menjual produk, tapi juga berbagi ilmu—semua ini adalah amanah.”</p>
+                            </div>
+                            <a href="https://wa.me/6285187920550" target="_blank" class="mt-6 inline-block bg-green-500 text-white font-bold py-2 px-4 rounded-full hover:bg-green-600">Hubungi Saya</a>
+                        </div>
+                    </div>
+                </div>`
+            } else if (currentUser) {
+                container.innerHTML = `
+                 <div class="text-center">
+                    <h1 class="text-4xl font-bold">Profil ${currentUser.username}</h1>
+                    <p class="mt-4">Ini adalah halaman profil Anda. Fitur lainnya akan segera hadir!</p>
+                 </div>
+                 `
+            } else {
+                container.innerHTML = `<div class="text-center"><p>Silakan <a href="#" class="text-emerald-600 font-bold" onclick="navigateTo('login')">login</a> untuk melihat profil Anda.</p></div>`
+            }
+        };
+
+        const renderFeaturedProducts = () => {
+            document.getElementById("featured-products-grid").innerHTML = productsDB.filter(p => p.featured).slice(0, 4).map(createProductCardHTML).join("");
+            lucide.createIcons();
+        };
+
+        const renderTestimonials = () => {
+            document.getElementById("testimonials-grid").innerHTML = testimonialsDB.map(t => `
+                <div class="bg-white dark:bg-slate-700 p-6 rounded-lg shadow-md">
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">"${t.text}"</p>
+                    <div class="flex items-center">
+                        <img src="${t.avatar}" alt="${t.name}" class="w-12 h-12 rounded-full mr-4">
+                        <div><p class="font-bold">${t.name}</p></div>
+                    </div>
+                </div>`).join("")
+        };
+
+        const renderCategories = () => {
+            const grid = document.getElementById("categories-grid");
+            const filter = document.getElementById("category-filter");
+            grid.innerHTML = "";
+            let filterOptions = `<option value="all">Semua Kategori</option>`;
+            categoriesDB.forEach(c => {
+                grid.innerHTML += `
+                    <div class="text-center p-4 bg-white dark:bg-slate-700 rounded-lg shadow-sm cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition-all" onclick="filterByCategory('${c.name}')">
+                        <i data-lucide="${c.icon}" class="mx-auto h-8 w-8 text-emerald-600 mb-2"></i>
+                        <span class="font-semibold">${c.name}</span>
+                    </div>`;
+                filterOptions += `<option value="${c.name}">${c.name}</option>`;
+            });
+            filter.innerHTML = filterOptions;
+            lucide.createIcons();
+        };
+
+        const createProductCardHTML = (product) => {
+            const isInWishlist = wishlist.includes(product.id);
+            return `
+            <div class="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 group">
+                <div class="relative">
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                    <button onclick="toggleWishlist(${product.id})" class="absolute top-2 right-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-full text-red-500 hover:scale-110 transition-transform">
+                        <i data-lucide="heart" class="${isInWishlist ? 'fill-current' : ''}"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">${product.category}</span>
+                    <h3 class="text-lg font-semibold mb-2 truncate">${product.name}</h3>
+                    <p class="text-xl font-bold text-emerald-600 mb-4">${formatRupiah(product.price)}</p>
+                    <div class="flex space-x-2">
+                        <button onclick="addToCart(${product.id})" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 transition-colors text-sm"> + Keranjang </button>
+                        <a href="https://wa.me/6285187920550?text=${encodeURIComponent(`Halo, saya ingin membeli ${product.name} seharga ${formatRupiah(product.price)}.`)}" target="_blank" class="flex-1 bg-gray-200 dark:bg-slate-700 text-center py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors text-sm"> Beli via WA </a>
+                    </div>
+                </div>
+            </div>`;
+        };
+        
+        const applyFiltersAndRenderProducts = () => {
+            const category = document.getElementById('category-filter').value;
+            const sort = document.getElementById('sort-filter').value;
+            const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+
+            let filteredProducts = [...productsDB];
+
+            if (searchTerm) {
+                filteredProducts = filteredProducts.filter(p =>
+                    p.name.toLowerCase().includes(searchTerm) ||
+                    p.description.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (category !== 'all') {
+                filteredProducts = filteredProducts.filter(p => p.category === category);
+            }
+
+            switch (sort) {
+                case 'price-asc':
+                    filteredProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-desc':
+                    filteredProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case 'popular':
+                default:
+                    filteredProducts.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+                    break;
+            }
+
+            const grid = document.getElementById('all-products-grid');
+            grid.innerHTML = filteredProducts.length > 0
+                ? filteredProducts.map(createProductCardHTML).join('')
+                : '<p class="col-span-full text-center text-gray-500 dark:text-gray-400">Produk tidak ditemukan.</p>';
+            
+            lucide.createIcons();
+        };
+
+        const filterByCategory = (categoryName) => {
+            navigateTo('products');
+            document.getElementById('category-filter').value = categoryName;
+            applyFiltersAndRenderProducts();
+        };
+
+        // --- WISHLIST LOGIC ---
+        const toggleWishlist = (productId) => {
+            const index = wishlist.indexOf(productId);
+            if (index > -1) {
+                wishlist.splice(index, 1);
+                showToast('Dihapus dari wishlist.');
+            } else {
+                wishlist.push(productId);
+                showToast('Ditambahkan ke wishlist!');
+            }
+            saveData();
+            // Re-render current view to update heart icons
+            if(!document.getElementById('products-page').classList.contains('page-hidden')) applyFiltersAndRenderProducts();
+            if(!document.getElementById('home-page').classList.contains('page-hidden')) renderFeaturedProducts();
+            if(!document.getElementById('wishlist-page').classList.contains('page-hidden')) renderWishlistPage();
+        };
+
+        const renderWishlistPage = () => {
+            const container = document.getElementById('wishlist-page');
+            const wishlistedProducts = productsDB.filter(p => wishlist.includes(p.id));
+
+            if (wishlistedProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-gray-500">
+                        <i data-lucide="heart" class="mx-auto h-16 w-16 mb-4"></i>
+                        <h1 class="text-4xl font-bold mb-4">Wishlist Anda Kosong</h1>
+                        <p>Simpan produk yang Anda suka dengan menekan ikon hati.</p>
+                    </div>`;
+            } else {
+                 container.innerHTML = `
+                    <h1 class="text-4xl font-bold text-center mb-8">Wishlist Saya</h1>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${wishlistedProducts.map(createProductCardHTML).join('')}
+                    </div>`;
+            }
+            lucide.createIcons();
+        };
+
+        // --- CART LOGIC ---
+        const addToCart = (productId) => {
+            const product = productsDB.find(p => p.id === productId);
+            if (!product) return;
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            saveData();
+            updateCartCount();
+            showToast(`${product.name} ditambahkan ke keranjang!`);
+        };
+
+        const updateCartItemQuantity = (productId, newQuantity) => {
+            const cartItem = cart.find(item => item.id === productId);
+            if (!cartItem) return;
+
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                cartItem.quantity = newQuantity;
+            }
+            saveData();
+            updateCartCount();
+            renderCartPage();
+        };
+
+        const removeFromCart = (productId) => {
+            cart = cart.filter(item => item.id !== productId);
+            saveData();
+            updateCartCount();
+            renderCartPage();
+            showToast("Produk dihapus dari keranjang.");
+        };
+
+        const renderCartPage = () => {
+            const container = document.getElementById('cart-items-container');
+            const summaryContainer = document.getElementById('cart-summary');
+            const emptyCartMsg = document.getElementById('empty-cart-message');
+
+            if (cart.length === 0) {
+                container.innerHTML = '';
+                summaryContainer.innerHTML = '';
+                emptyCartMsg.classList.remove('page-hidden');
+            } else {
+                emptyCartMsg.classList.add('page-hidden');
+                container.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm flex-wrap">
+                        <div class="flex items-center mb-2 sm:mb-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-md object-cover mr-4">
+                            <div>
+                                <p class="font-semibold">${item.name}</p>
+                                <p class="text-sm text-gray-500">${formatRupiah(item.price)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="number" value="${item.quantity}" min="1" onchange="updateCartItemQuantity(${item.id}, this.valueAsNumber)" class="w-16 p-1 border rounded text-center bg-gray-100 dark:bg-slate-700">
+                            <button onclick="removeFromCart(${item.id})" class="p-2 text-red-500 hover:text-red-700"><i data-lucide="trash-2"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+                const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                summaryContainer.innerHTML = `
+                    <h2 class="text-2xl font-bold">Total: ${formatRupiah(totalPrice)}</h2>
+                    <button onclick="navigateTo('checkout')" class="mt-4 emerald-gradient text-white font-bold py-2 px-6 rounded-full hover:opacity-90">
+                        Lanjut ke Checkout
+                    </button>
+                `;
+                renderCheckoutSummary();
+            }
+            lucide.createIcons();
+        };
+
+        const renderCheckoutSummary = () => {
+            const summaryContainer = document.getElementById('checkout-summary');
+             if (cart.length === 0) {
+                summaryContainer.innerHTML = '<p>Tidak ada item untuk checkout.</p>';
+                return;
+            }
+            
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            summaryContainer.innerHTML = `
+                <ul class="space-y-2 mb-4">
+                ${cart.map(item => `
+                    <li class="flex justify-between text-sm">
+                        <span>${item.name} x ${item.quantity}</span>
+                        <span>${formatRupiah(item.price * item.quantity)}</span>
+                    </li>
+                `).join('')}
+                </ul>
+                <div class="border-t dark:border-slate-600 pt-2 font-bold flex justify-between">
+                    <span>Total</span>
+                    <span>${formatRupiah(totalPrice)}</span>
+                </div>
+            `;
+        };
+
+        const handleCheckout = async (e) => {
+            e.preventDefault();
+            const modal = document.getElementById('checkout-animation-modal');
+            const statusText = document.getElementById('checkout-status-text');
+            
+            modal.style.display = 'flex';
+            modal.classList.remove('success');
+            statusText.textContent = 'Memproses Pesanan...';
+
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing
+
+            modal.classList.add('success');
+            statusText.textContent = 'Pesanan Berhasil!';
+            playSuccessSound();
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const name = document.getElementById('checkout-name').value;
+            const phone = document.getElementById('checkout-phone').value;
+            const orderDetails = cart.map(item => `${item.name} (x${item.quantity})`).join(', ');
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const whatsappMessage = `Halo, saya ingin menyelesaikan pesanan saya.\n\nNama: ${name}\nNo. HP: ${phone}\n\nPesanan: ${orderDetails}\nTotal: ${formatRupiah(totalPrice)}\n\nSaya akan segera melakukan pembayaran via DANA.`;
+            const whatsappURL = `https://wa.me/6285187920550?text=${encodeURIComponent(whatsappMessage)}`;
+
+            cart = [];
+            saveData();
+            updateCartCount();
+            renderCartPage(); 
+            
+            modal.style.display = 'none';
+            window.open(whatsappURL, '_blank');
+            navigateTo('home');
+        };
+
+        // --- ADMIN DASHBOARD ---
+        const renderAdminDashboard = () => { renderAdminProductForm(); renderAdminProductList(); };
+
+        const renderAdminProductList = () => {
+            document.getElementById("admin-products-list").innerHTML = productsDB.map(p => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-md">
+                    <div class="flex items-center">
+                        <img src="${p.image}" class="w-12 h-12 rounded-md object-cover mr-4">
+                        <div><p class="font-semibold">${p.name}</p><p class="text-sm text-gray-500">${formatRupiah(p.price)}</p></div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="showEditProductForm(${p.id})" class="p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"><i data-lucide="edit"></i></button>
+                        <button onclick="handleDeleteProduct(${p.id})" class="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"><i data-lucide="trash-2"></i></button>
+                    </div>
+                </div>`).join("");
+            lucide.createIcons()
+        };
+        
+        const renderAdminProductForm = (product = null) => {
+            const container = document.getElementById('admin-product-form-container');
+            const isEditing = product !== null;
+            container.innerHTML = `
+                <h3 class="text-xl font-semibold mb-4">${isEditing ? 'Edit Produk' : 'Tambah Produk Baru'}</h3>
+                <form id="admin-product-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="product-id" value="${isEditing ? product.id : ''}">
+                    <input type="text" id="product-name" placeholder="Nama Produk" class="w-full p-2 border rounded form-input" value="${isEditing ? product.name : ''}" required>
+                    <select id="product-category" class="w-full p-2 border rounded form-input" required>
+                        ${categoriesDB.map(c => `<option value="${c.name}" ${isEditing && product.category === c.name ? 'selected' : ''}>${c.name}</option>`).join('')}
+                    </select>
+                    <input type="number" id="product-price" placeholder="Harga" class="w-full p-2 border rounded form-input" value="${isEditing ? product.price : ''}" required>
+                    <input type="text" id="product-image" placeholder="URL Gambar" class="w-full p-2 border rounded form-input" value="${isEditing ? product.image : ''}" required>
+                    <div class="md:col-span-2 relative">
+                        <textarea id="product-description" placeholder="Deskripsi" rows="4" class="w-full p-2 border rounded form-input pr-12">${isEditing ? product.description : ''}</textarea>
+                        <button type="button" id="generate-desc-btn" class="absolute top-2 right-2 text-emerald-600 hover:text-emerald-800 p-1" title="Generate Deskripsi dengan AI">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="md:col-span-2 flex items-center">
+                        <input type="checkbox" id="product-featured" class="mr-2" ${isEditing && product.featured ? 'checked' : ''}>
+                        <label for="product-featured">Produk Unggulan</label>
+                    </div>
+                    <div class="md:col-span-2 flex space-x-2">
+                         <button type="submit" class="emerald-gradient text-white font-bold py-2 px-6 rounded-md hover:opacity-90">${isEditing ? 'Simpan Perubahan' : 'Tambah Produk'}</button>
+                         ${isEditing ? '<button type="button" onclick="renderAdminProductForm()" class="bg-gray-200 py-2 px-4 rounded-md">Batal</button>' : ''}
+                    </div>
+                </form>
+            `;
+            document.getElementById('admin-product-form').addEventListener('submit', handleProductSubmit);
+            document.getElementById('generate-desc-btn').addEventListener('click', handleGenerateDescription);
+            lucide.createIcons();
+        };
+
+        const handleGenerateDescription = async () => {
+            const productName = document.getElementById('product-name').value;
+            if (!productName) {
+                showToast("Silakan masukkan nama produk terlebih dahulu.", true);
+                return;
+            }
+            const btn = document.getElementById('generate-desc-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>`;
+            lucide.createIcons();
+
+            const systemPrompt = "Anda adalah seorang ahli marketing untuk toko online bernama 'Dimz Store' yang menjual produk dan jasa digital. Buat deskripsi produk yang menarik, singkat (2-3 kalimat), dan persuasif dalam Bahasa Indonesia. Fokus pada manfaat bagi pelanggan.";
+            const userQuery = `Buatkan deskripsi produk untuk: "${productName}"`;
+            
+            const generatedDesc = await callGeminiAPI(userQuery, systemPrompt);
+
+            document.getElementById('product-description').value = generatedDesc;
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5"></i>`;
+            lucide.createIcons();
+        };
+
+        const showEditProductForm = (id) => { const product = productsDB.find(p => p.id == id); renderAdminProductForm(product); };
+        
+        const handleProductSubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById("product-id").value;
+            const productData = {
+                name: document.getElementById("product-name").value,
+                category: document.getElementById("product-category").value,
+                price: parseInt(document.getElementById("product-price").value),
+                image: document.getElementById("product-image").value,
+                description: document.getElementById("product-description").value,
+                featured: document.getElementById("product-featured").checked
+            };
+            if (id) {
+                const index = productsDB.findIndex(p => p.id == id);
+                productsDB[index] = { ...productsDB[index],
+                    ...productData
+                };
+                showToast("Produk berhasil diperbarui.")
+            } else {
+                productData.id = Date.now();
+                productsDB.push(productData);
+                showToast("Produk baru berhasil ditambahkan.")
+            }
+            saveData();
+            applyFiltersAndRenderProducts();
+            renderAdminDashboard();
+        };
+
+        const handleDeleteProduct = (id) => {
+            if (confirm("Anda yakin ingin menghapus produk ini?")) {
+                productsDB = productsDB.filter(p => p.id !== id);
+                saveData();
+                applyFiltersAndRenderProducts();
+                renderAdminDashboard();
+                showToast("Produk berhasil dihapus.")
+            }
+        };
+
+        // --- AI CHATBOT ---
+        const addChatMessage = (message, sender) => {
+            const chatWindow = document.getElementById('chat-window');
+            const bubble = document.createElement('div');
+            
+            if (sender === 'ai-typing') {
+                bubble.className = `chat-bubble-ai self-start chat-bubble-typing`;
+                bubble.innerHTML = `<div class="flex items-center space-x-1"><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div></div>`;
+            } else {
+                 bubble.className = `w-fit max-w-[80%] rounded-lg px-3 py-2 ${sender === 'user' ? 'chat-bubble-user self-end' : 'chat-bubble-ai self-start'}`;
+                 bubble.textContent = message;
+            }
+
+            chatWindow.appendChild(bubble);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+
+        const handleChatSubmit = async () => {
+            const input = document.getElementById('chat-input');
+            const userMessage = input.value.trim();
+            if (!userMessage) return;
+
+            addChatMessage(userMessage, 'user');
+            input.value = '';
+            
+            const productList = productsDB.map(p => `- ${p.name} (Harga: ${formatRupiah(p.price)})`).join('\n');
+            const systemPrompt = `Anda adalah asisten AI yang ramah dan membantu untuk toko online bernama 'Dimz Store'. Pencipta Anda adalah tuan Anda yang bernama Dimas Ferdiansyah. Anda harus selalu menjawab dalam Bahasa Indonesia.
+            
+            Tugas Utama:
+            1.  **Jawab Pertanyaan Toko:** Bantu pelanggan dengan pertanyaan seputar produk, harga, dan cara pemesanan. Gunakan daftar produk di bawah ini sebagai referensi.
+            2.  **Berikan Rekomendasi:** Jika diminta, sarankan produk unggulan.
+            3.  **Jawab Pertanyaan Umum:** Jika ditanya siapa Anda atau siapa yang menciptakan Anda, jawab dengan bangga bahwa Anda diciptakan oleh Dimas Ferdiansyah. Anda juga bisa menjawab pertanyaan umum lainnya secara singkat dan bersahabat.
+            4.  **Tolak Hal Negatif:** Jika ada pertanyaan yang tidak pantas, tolak dengan sopan.
+
+            Daftar Produk & Harga:
+            ${productList}
+            `;
+
+            const aiResponse = await callGeminiAPI(userMessage, systemPrompt);
+            addChatMessage(aiResponse, 'ai');
+        };
+
+        // --- LEARN CODING LOGIC ---
+        const renderLearnCodingDashboard = () => {
+            const grid = document.getElementById('language-selection-grid');
+            grid.innerHTML = Object.keys(learnCodingDB).map(key => {
+                const lang = learnCodingDB[key];
+                const progress = learnCodingProgress[key] || 0;
+                const totalTopics = lang.topics.length;
+                const percentage = totalTopics > 0 ? (progress / totalTopics) * 100 : 0;
+                return `
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md cursor-pointer transform hover:-translate-y-1 transition-transform" onclick="navigateToTopic('${key}', 0)">
+                        <i data-lucide="${lang.icon}" class="w-10 h-10 text-emerald-500 mb-3"></i>
+                        <h3 class="text-xl font-bold mb-2">${lang.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">${lang.description}</p>
+                        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5">
+                            <div class="bg-emerald-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        };
+
+        const showLearnCodingDashboard = () => {
+            document.getElementById('learn-coding-dashboard').classList.remove('page-hidden');
+            document.getElementById('learn-coding-topic-view').classList.add('page-hidden');
+            renderLearnCodingDashboard();
+        };
+
+        const navigateToTopic = (langKey, topicIndex) => {
+            document.getElementById('learn-coding-dashboard').classList.add('page-hidden');
+            document.getElementById('learn-coding-topic-view').classList.remove('page-hidden');
+            renderTopicView(langKey, topicIndex);
+        };
+
+        const renderTopicView = (langKey, topicIndex) => {
+            const lang = learnCodingDB[langKey];
+            const topic = lang.topics[topicIndex];
+            const totalTopics = lang.topics.length;
+
+            // Update Header
+            document.getElementById('topic-header').innerHTML = `
+                <div class="flex items-center mb-2">
+                    <i data-lucide="${lang.icon}" class="w-8 h-8 text-emerald-500 mr-3"></i>
+                    <h2 class="text-3xl font-bold">${lang.title}</h2>
+                </div>
+                <p class="text-gray-500">Materi ${topicIndex + 1} dari ${totalTopics}</p>
+            `;
+
+            // Update Progress Bar
+            const currentProgress = learnCodingProgress[langKey] || 0;
+            if(topicIndex + 1 > currentProgress) {
+                learnCodingProgress[langKey] = topicIndex + 1;
+                saveData();
+            }
+            const percentage = (learnCodingProgress[langKey] / totalTopics) * 100;
+            document.getElementById('topic-progress-bar').innerHTML = `
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5">
+                    <div class="bg-emerald-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+            `;
+
+            // Update Topic List
+            document.getElementById('topic-list').innerHTML = lang.topics.map((t, index) => `
+                <li onclick="navigateToTopic('${langKey}', ${index})" class="p-3 rounded-md cursor-pointer ${index === topicIndex ? 'bg-emerald-100 dark:bg-emerald-900 font-bold' : 'hover:bg-gray-100 dark:hover:bg-slate-700'}">
+                   ${index < (learnCodingProgress[langKey] || 0) ? '<i data-lucide="check-circle" class="inline-block text-emerald-500 mr-2 h-5 w-5"></i>' : ''} ${t.title}
+                </li>
+            `).join('');
+            
+            // Update Content
+            const contentContainer = document.getElementById('topic-content-container');
+            let contentHTML = `
+                <h2 class="text-3xl font-bold mb-4">${topic.title}</h2>
+                <p>${topic.content}</p>
+            `;
+            if(topic.codeExample) {
+                contentHTML += `<h3 class="text-xl font-semibold mt-6 mb-2">Contoh Kode:</h3><pre><code>${topic.codeExample.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
+            }
+            contentContainer.innerHTML = contentHTML;
+
+            // Update Nav Buttons
+            const prevBtn = document.getElementById('prev-topic-btn');
+            const nextBtn = document.getElementById('next-topic-btn');
+            prevBtn.disabled = topicIndex === 0;
+            nextBtn.disabled = topicIndex === totalTopics - 1;
+            prevBtn.onclick = () => navigateToTopic(langKey, topicIndex - 1);
+            nextBtn.onclick = () => navigateToTopic(langKey, topicIndex + 1);
+
+            lucide.createIcons();
+        };
+        
+        // --- PRACTICE CODING (GAME) LOGIC ---
+        let gameCtx, player, enemies, goal, TILE_SIZE, gameLoopId;
+        const gameLevels = [
+            { 
+                title: "Langkah Pertama",
+                description: "Gunakan perintah `moveForward()` untuk mencapai kotak hijau.",
+                startCode: "moveForward();",
+                playerStart: { x: 1, y: 4 },
+                goal: { x: 7, y: 4 },
+                enemies: []
+            },
+            {
+                title: "Belok Kiri",
+                description: "Gunakan `turnLeft()` lalu `moveForward()` untuk berbelok.",
+                startCode: "moveForward();\nturnLeft();",
+                playerStart: { x: 1, y: 7 },
+                goal: { x: 4, y: 1 },
+                enemies: []
+            },
+            {
+                title: "Hancurkan Target",
+                description: "Dekati target merah dan gunakan `attack()` untuk menghancurkannya.",
+                startCode: "moveForward();\nmoveForward();\nattack();",
+                playerStart: { x: 1, y: 4 },
+                goal: { x: 7, y: 4 },
+                enemies: [{ x: 4, y: 4 }]
+            }
+        ];
+        let currentLevelIndex = 0;
+        let commandQueue = [];
+        let isExecutingCommands = false;
+
+        const initGame = () => {
+            const canvas = document.getElementById('game-canvas');
+            if (!canvas) return;
+            gameCtx = canvas.getContext('2d');
+
+            const resizeCanvas = () => {
+                const container = canvas.parentElement;
+                const size = Math.min(container.clientWidth, 560); // Max width
+                canvas.width = size;
+                canvas.height = size * (9/16);
+                TILE_SIZE = canvas.width / 16;
+                drawGameState();
+            };
+            
+            loadLevel(currentLevelIndex);
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            gameLoop();
+        };
+
+        const loadLevel = (levelIndex) => {
+            currentLevelIndex = levelIndex;
+            const level = gameLevels[levelIndex];
+            
+            player = { ...level.playerStart, dir: 0 }; // 0:R, 1:U, 2:L, 3:D
+            enemies = level.enemies.map(e => ({ ...e, alive: true }));
+            goal = { ...level.goal };
+
+            document.getElementById('mission-title').textContent = level.title;
+            document.getElementById('mission-description').textContent = level.description;
+            document.getElementById('practice-code-input').value = level.startCode;
+            
+            const levelSelector = document.getElementById('level-selector');
+            levelSelector.innerHTML = gameLevels.map((_, i) => 
+                `<button onclick="loadLevel(${i})" class="${i === levelIndex ? 'bg-emerald-600 text-white' : 'bg-gray-200 dark:bg-slate-700'} w-8 h-8 rounded-full font-bold">${i + 1}</button>`
+            ).join('');
+            
+            commandQueue = [];
+            isExecutingCommands = false;
+            drawGameState();
+        };
+
+        const drawGameState = () => {
+            if (!gameCtx || !goal || !player || !enemies) return;
+            gameCtx.clearRect(0, 0, gameCtx.canvas.width, gameCtx.canvas.height);
+            
+            // Draw Goal
+            gameCtx.fillStyle = 'rgba(16, 185, 129, 0.5)';
+            gameCtx.fillRect(goal.x * TILE_SIZE, goal.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+            // Draw Enemies
+            enemies.forEach(enemy => {
+                if (enemy.alive) {
+                    gameCtx.fillStyle = '#ef4444';
+                    gameCtx.fillRect(enemy.x * TILE_SIZE, enemy.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            });
+
+            // Draw Player
+            gameCtx.fillStyle = '#3b82f6';
+            gameCtx.fillRect(player.x * TILE_SIZE, player.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            // Draw direction indicator
+            gameCtx.fillStyle = '#ffffff';
+            const indicatorSize = TILE_SIZE / 4;
+            let ix = player.x * TILE_SIZE + (TILE_SIZE - indicatorSize) / 2;
+            let iy = player.y * TILE_SIZE + (TILE_SIZE - indicatorSize) / 2;
+            if (player.dir === 0) ix += TILE_SIZE/4; // Right
+            if (player.dir === 1) iy -= TILE_SIZE/4; // Up
+            if (player.dir === 2) ix -= TILE_SIZE/4; // Left
+            if (player.dir === 3) iy += TILE_SIZE/4; // Down
+            gameCtx.fillRect(ix, iy, indicatorSize, indicatorSize);
+        };
+
+        const gameLoop = () => {
+            processCommandQueue();
+            drawGameState();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        };
+
+        const processCommandQueue = () => {
+            if (isExecutingCommands || commandQueue.length === 0) return;
+
+            isExecutingCommands = true;
+            const command = commandQueue.shift();
+            
+            try {
+                command();
+            } catch (e) {
+                showToast(`Error: ${e.message}`, true);
+            }
+
+            setTimeout(() => {
+                isExecutingCommands = false;
+                if(commandQueue.length === 0) checkMissionStatus();
+            }, 300);
+        };
+
+        const runPracticeCode = () => {
+            const code = document.getElementById('practice-code-input').value;
+            // A simple pseudo-sandbox
+            const moveForward = () => commandQueue.push(() => {
+                if (player.dir === 0) player.x++; // Right
+                if (player.dir === 1) player.y--; // Up
+                if (player.dir === 2) player.x--; // Left
+                if (player.dir === 3) player.y++; // Down
+            });
+            const turnLeft = () => commandQueue.push(() => { player.dir = (player.dir + 1) % 4; });
+            const turnRight = () => commandQueue.push(() => { player.dir = (player.dir + 3) % 4; });
+            const attack = () => commandQueue.push(() => {
+                let targetX = player.x;
+                let targetY = player.y;
+                if (player.dir === 0) targetX++;
+                if (player.dir === 1) targetY--;
+                if (player.dir === 2) targetX--;
+                if (player.dir === 3) targetY++;
+                enemies.forEach(e => {
+                    if (e.x === targetX && e.y === targetY) e.alive = false;
+                });
+            });
+
+            try {
+                eval(code);
+            } catch (e) {
+                showToast(`Error pada kode Anda: ${e.message}`, true);
+                commandQueue = [];
+            }
+        };
+
+        const checkMissionStatus = () => {
+            const level = gameLevels[currentLevelIndex];
+            const enemiesDefeated = enemies.every(e => !e.alive);
+            const goalReached = player.x === goal.x && player.y === goal.y;
+
+            if (enemiesDefeated && goalReached) {
+                showToast(`Level ${currentLevelIndex + 1} Selesai!`, false);
+                if (currentLevelIndex < gameLevels.length - 1) {
+                    setTimeout(() => loadLevel(currentLevelIndex + 1), 1000);
+                }
+            }
+        };
+
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            
+            // Initial Renders
+            renderCategories();
+            renderTestimonials();
+            updateUIForAuthState();
+            navigateTo('home');
+            renderFeaturedProducts();
+            applyFiltersAndRenderProducts();
+            updateCartCount();
+            renderLearnCodingDashboard();
+
+            // Form Submissions
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+            document.getElementById('checkout-form').addEventListener('submit', handleCheckout);
+
+             // Product Filters
+            document.getElementById('category-filter').addEventListener('change', applyFiltersAndRenderProducts);
+            document.getElementById('sort-filter').addEventListener('change', applyFiltersAndRenderProducts);
+            document.getElementById('search-bar').addEventListener('input', applyFiltersAndRenderProducts);
+            
+            // Dark Mode
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const setupDarkMode = () => {
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            };
+            setupDarkMode();
+            darkModeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            });
+
+            // Mobile Menu
+            document.getElementById('mobile-menu-button').addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+
+            // Chatbot
+            document.getElementById('chatbot-toggle').addEventListener('click', () => {
+                 document.getElementById('chatbot-widget').classList.toggle('hidden');
+                 document.getElementById('chat-open-icon').classList.toggle('hidden');
+                 document.getElementById('chat-close-icon').classList.toggle('hidden');
+            });
+            document.getElementById('chat-send').addEventListener('click', handleChatSubmit);
+            document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChatSubmit(); });
+            addChatMessage('Halo! Selamat datang di Dimz Store. Ada yang bisa saya bantu?', 'ai');
+            
+            // Practice Coding Listeners
+            document.getElementById('run-practice-code-btn').addEventListener('click', runPracticeCode);
+            document.getElementById('reset-level-btn').addEventListener('click', () => loadLevel(currentLevelIndex));
+
+            // Hide preloader
+            const preloader = document.getElementById('preloader');
+            preloader.style.opacity = '0';
+            setTimeout(() => { preloader.style.display = 'none'; }, 500);
+
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
+
